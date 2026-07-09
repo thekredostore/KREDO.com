@@ -1289,8 +1289,9 @@ footer{border-top:1px solid var(--charcoal);padding:72px 52px 36px}
       <span class="hero-eyebrow"><span class="hero-eyebrow-inner">Luxury Streetwear — SS 2025</span></span>
       <div class="hero-title" id="hero-title"></div>
       <div class="hero-slogan">Silence Speaks Wealth</div>
-      <div class="hero-cta">
-        <button class="btn-primary magnetic" onclick="navigate('shop')">Explore Collection</button>
+      <div class="hero-cta" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;pointer-events:all">
+        <button class="btn-primary magnetic" onclick="navigate('shop')" style="font-size:.7rem;padding:18px 64px;letter-spacing:.45em">Shop Now</button>
+        <button class="btn-secondary magnetic" onclick="document.querySelector('.story-section').scrollIntoView({behavior:'smooth'})" style="font-size:.65rem;padding:18px 40px;letter-spacing:.3em;pointer-events:all">Our Story</button>
       </div>
     </div>
     <div class="scroll-hint">
@@ -1372,6 +1373,24 @@ footer{border-top:1px solid var(--charcoal);padding:72px 52px 36px}
     <div class="product-grid" id="bestseller-grid"></div>
   </section>
 
+  <!-- TRENDING NOW -->
+  <section class="section" style="padding-top:0">
+    <div class="sec-label">Analytics</div>
+    <div class="sec-title">Trending Now</div>
+    <div style="font-size:.8rem;line-height:1.8;color:var(--dim);max-width:500px;margin-bottom:40px">The most viewed and most added-to-cart pieces right now.</div>
+    <div class="product-grid" id="trend-grid"></div>
+  </section>
+
+  <!-- RECOMMENDED FOR YOU -->
+  <div style="background:var(--charcoal);padding:80px 0">
+    <section style="padding:0 52px;max-width:1440px;margin:0 auto">
+      <div class="sec-label">Personalised</div>
+      <div class="sec-title">Recommended for You</div>
+      <div style="font-size:.8rem;line-height:1.8;color:var(--dim);max-width:500px;margin-bottom:40px" id="rec-subtitle">Based on your wishlist and browsing</div>
+      <div class="product-grid" id="rec-grid"></div>
+    </section>
+  </div>
+
   <footer>
     <div class="foot-top">
       <div>
@@ -1417,20 +1436,19 @@ footer{border-top:1px solid var(--charcoal);padding:72px 52px 36px}
     <aside class="filters-col">
       <div class="filter-sec">
         <div class="filter-ttl">Category</div>
-        <button class="filter-opt on" onclick="filterCat('all',this)"><span class="fchk">✓</span>All</button>
-        <button class="filter-opt" onclick="filterCat('tshirt',this)"><span class="fchk"></span>T-Shirts</button>
-        <button class="filter-opt" onclick="filterCat('hoodie',this)"><span class="fchk"></span>Hoodies</button>
-        <button class="filter-opt" onclick="filterCat('shirt',this)"><span class="fchk"></span>Shirts</button>
+        <div id="cat-filter-list"><!-- populated by renderCategoryFilter() --></div>
       </div>
       <div class="filter-sec">
-        <div class="filter-ttl">Size</div>
-        <div class="sz-grid">
-          <button class="sz-b" onclick="this.classList.toggle('on')">XS</button>
-          <button class="sz-b on" onclick="this.classList.toggle('on')">S</button>
-          <button class="sz-b on" onclick="this.classList.toggle('on')">M</button>
-          <button class="sz-b" onclick="this.classList.toggle('on')">L</button>
-          <button class="sz-b" onclick="this.classList.toggle('on')">XL</button>
+        <div class="filter-ttl">Min Rating</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="rating-filter-btn filter-opt" data-r="0" onclick="filterRating(0,this)"><span class="fchk">✓</span>All Ratings</button>
+          <button class="rating-filter-btn filter-opt" data-r="4" onclick="filterRating(4,this)"><span class="fchk"></span>★★★★+ (4 &amp; up)</button>
+          <button class="rating-filter-btn filter-opt" data-r="4.5" onclick="filterRating(4.5,this)"><span class="fchk"></span>★★★★½ (4.5 &amp; up)</button>
         </div>
+      </div>
+      <div class="filter-sec">
+        <div class="filter-ttl">Brand</div>
+        <div id="brand-filter-list"><!-- populated by renderBrandFilter() --></div>
       </div>
       <div class="filter-sec">
         <div class="filter-ttl">Max Price</div>
@@ -1457,6 +1475,8 @@ footer{border-top:1px solid var(--charcoal);padding:72px 52px 36px}
             <option value="new">Newest First</option>
             <option value="asc">Price: Low → High</option>
             <option value="desc">Price: High → Low</option>
+            <option value="popular">Most Popular</option>
+            <option value="rating">Top Rated</option>
           </select>
         </div>
       </div>
@@ -1476,6 +1496,10 @@ footer{border-top:1px solid var(--charcoal);padding:72px 52px 36px}
       <div class="prod-cat" id="pp-cat"></div>
       <div class="lim-badge"><span class="lim-dot"></span><span id="pp-stock">Only 47 pieces left</span></div>
       <div class="prod-name" id="pp-name"></div>
+      <div style="margin:6px 0 12px;display:flex;align-items:center;gap:12px">
+        <span id="pp-rating"></span>
+        <span style="font-size:.62rem;letter-spacing:.2em;color:var(--mid);text-transform:uppercase" id="pp-views-label"></span>
+      </div>
       <div class="prod-price" id="pp-price"></div>
       <div class="prod-divider"></div>
       <div class="prod-tabs">
@@ -1499,9 +1523,13 @@ footer{border-top:1px solid var(--charcoal);padding:72px 52px 36px}
       </div>
     </div>
   </div>
+  <!-- SIMILAR PRODUCTS -->
+  <div id="similar-wrap" style="display:none;padding:72px 52px;background:var(--dark);border-top:1px solid var(--charcoal)">
+    <div class="sec-label">You May Also Like</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,3vw,2.8rem);font-weight:200;color:var(--white);margin-bottom:36px">Similar Products</div>
+    <div class="product-grid" id="similar-grid"></div>
+  </div>
 </div>
-
-<!-- CHECKOUT -->
 <div id="page-checkout" class="page">
   <div class="checkout-layout">
     <div class="checkout-main">
@@ -1914,14 +1942,15 @@ footer{border-top:1px solid var(--charcoal);padding:72px 52px 36px}
       <div class="admin-side-logo">KREDO <span>ADMIN</span></div>
       <button class="adm-nav on" onclick="admSection('dash',this)">📊 Dashboard</button>
       <button class="adm-nav" onclick="admSection('prods',this)">👕 Products</button>
+      <button class="adm-nav" onclick="admSection('cats',this)">🏷️ Categories</button>
       <button class="adm-nav" onclick="admSection('orders',this)">📦 Orders</button>
       <button class="adm-nav" onclick="admSection('qr',this)">💳 QR Code</button>
-      <button class="adm-nav" style="margin-top:24px;color:var(--red)" onclick="navigate('home')">← Exit Admin</button>
+      <button class="adm-nav" style="margin-top:24px;color:var(--red)" onclick="exitAdmin()">← Exit Admin</button>
     </aside>
     <main class="admin-main-area">
 
       <!-- DASHBOARD — live stats from real data -->
-      <div id="adm-dash">
+      <div id="adm-dash" style="display:none">
         <div class="adm-header">
           <div class="adm-title">Dashboard</div>
           <div style="display:flex;gap:10px;align-items:center">
@@ -1977,6 +2006,16 @@ footer{border-top:1px solid var(--charcoal);padding:72px 52px 36px}
           </div>
           <div class="form-row">
             <div class="form-g">
+              <label class="form-lbl">Brand</label>
+              <input class="form-inp" id="inp-brand" placeholder="KREDO">
+            </div>
+            <div class="form-g">
+              <label class="form-lbl">Rating (0–5)</label>
+              <input class="form-inp" id="inp-rating" type="number" min="0" max="5" step="0.1" placeholder="4.5">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-g">
               <label class="form-lbl">Badge Label</label>
               <input class="form-inp" id="inp-badge" placeholder="New / Limited (leave blank for none)">
             </div>
@@ -1998,8 +2037,41 @@ footer{border-top:1px solid var(--charcoal);padding:72px 52px 36px}
         <!-- PRODUCT TABLE -->
         <div id="prod-empty-msg" style="display:none;color:var(--mid);font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;padding:40px 0;text-align:center">No products yet. Add your first product above.</div>
         <table class="adm-table" id="prod-table-wrap">
-          <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Badge</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Product</th><th>Category</th><th>Brand</th><th>Price</th><th>Rating</th><th>Stock</th><th>Actions</th></tr></thead>
           <tbody id="adm-prod-table"></tbody>
+        </table>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div id="adm-cats" style="display:none">
+        <div class="adm-header">
+          <div class="adm-title">Categories</div>
+          <button class="btn-primary" id="toggle-cat-btn" onclick="toggleCatForm()">+ Add Category</button>
+        </div>
+        <!-- ADD CATEGORY FORM -->
+        <div id="add-cat-form" style="display:none;margin-bottom:28px;padding:24px;background:var(--charcoal);border:1px solid var(--grey)">
+          <div style="font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--offwhite);margin-bottom:18px" id="cat-form-label">New Category</div>
+          <div class="form-row">
+            <div class="form-g">
+              <label class="form-lbl">Category ID (slug, no spaces) *</label>
+              <input class="form-inp" id="cat-inp-id" placeholder="e.g. jacket">
+            </div>
+            <div class="form-g">
+              <label class="form-lbl">Display Label *</label>
+              <input class="form-inp" id="cat-inp-label" placeholder="e.g. Jackets">
+            </div>
+          </div>
+          <div id="cat-form-error" style="display:none;color:#e55;font-size:.72rem;margin-bottom:12px"></div>
+          <div style="display:flex;gap:10px">
+            <button class="btn-primary" onclick="saveCategory()">Save Category</button>
+            <button class="btn-secondary" onclick="cancelCatForm()">Cancel</button>
+          </div>
+        </div>
+        <!-- CATEGORIES TABLE -->
+        <div id="cats-empty-msg" style="display:none;color:var(--mid);font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;padding:32px 0;text-align:center">No custom categories yet.</div>
+        <table class="adm-table" id="cats-table-wrap">
+          <thead><tr><th>ID</th><th>Label</th><th>Products Using</th><th>Actions</th></tr></thead>
+          <tbody id="adm-cats-table"></tbody>
         </table>
       </div>
 
@@ -2040,39 +2112,53 @@ footer{border-top:1px solid var(--charcoal);padding:72px 52px 36px}
 
 // ── DEFAULT SEED PRODUCTS ──────────────────────────────────
 const DEFAULT_PRODUCTS = [
-  {id:1,name:'VOID Oversized Tee',cat:'tshirt',catLabel:'T-Shirt',price:2499,stock:47,desc:'An oversized silhouette built for quiet authority. Heavyweight 320GSM cotton with a washed finish that improves with every wear. The KREDO® logotype is embossed, not printed.',badge:'New',limited:true,color:'#111111'},
-  {id:2,name:'GHOST Hoodie',cat:'hoodie',catLabel:'Hoodie',price:4999,stock:23,desc:'Our flagship oversized hoodie in heavyweight brushed fleece. Dropped shoulders, elongated body, raw hem. Crafted to outlast trends, outlast seasons, outlast time.',badge:'Limited',limited:true,color:'#181818'},
-  {id:3,name:'MUTED Shirt',cat:'shirt',catLabel:'Shirt',price:3299,stock:62,desc:'Silence in structure. Extended placket, tonal stitching, and a boxy cut that moves between boardrooms and boulevards with equal grace.',badge:'',limited:false,color:'#0f0f0f'},
-  {id:4,name:'BLANK Polo',cat:'shirt',catLabel:'Polo',price:2999,stock:89,desc:'The anti-logo polo. No wordmarks. No graphics. Just exceptional piqué cotton and a silhouette refined across twelve prototypes.',badge:'',limited:false,color:'#141414'},
-  {id:5,name:'NULL Cargo',cat:'shirt',catLabel:'Bottoms',price:5499,stock:31,desc:'Technical cargo trousers with minimal branding and maximum function. Six pockets, articulated knees, tonal hardware. Designed for those who move with purpose.',badge:'New',limited:false,color:'#1a1a1a'},
-  {id:6,name:'SILENCE Hoodie',cat:'hoodie',catLabel:'Hoodie',price:4499,stock:18,desc:'Named for the philosophy. Whispers in every stitch — oversized fit, deliberately understated construction. Luxury through subtraction.',badge:'Limited',limited:true,color:'#0d0d0d'},
-  {id:7,name:'TRACE Tee',cat:'tshirt',catLabel:'T-Shirt',price:1999,stock:120,desc:'The entry point to KREDO®. Essential in form but exceptional in fabric — 300GSM Supima cotton with a pre-washed vintage feel from day one.',badge:'',limited:false,color:'#161616'},
-  {id:8,name:'ZERO Shirt',cat:'shirt',catLabel:'Shirt',price:3799,stock:14,desc:'Geometric precision meets effortless drape. An architectural shirt built on a grid — structured where it matters, relaxed everywhere else.',badge:'New',limited:true,color:'#0a0a0a'},
+  {id:1,name:'VOID Oversized Tee',cat:'tshirt',catLabel:'T-Shirt',price:2499,stock:47,brand:'KREDO',rating:4.8,views:0,cartCount:0,desc:'An oversized silhouette built for quiet authority. Heavyweight 320GSM cotton with a washed finish that improves with every wear. The KREDO® logotype is embossed, not printed.',badge:'New',limited:true,color:'#111111'},
+  {id:2,name:'GHOST Hoodie',cat:'hoodie',catLabel:'Hoodie',price:4999,stock:23,brand:'KREDO',rating:4.9,views:0,cartCount:0,desc:'Our flagship oversized hoodie in heavyweight brushed fleece. Dropped shoulders, elongated body, raw hem. Crafted to outlast trends, outlast seasons, outlast time.',badge:'Limited',limited:true,color:'#181818'},
+  {id:3,name:'MUTED Shirt',cat:'shirt',catLabel:'Shirt',price:3299,stock:62,brand:'KREDO',rating:4.6,views:0,cartCount:0,desc:'Silence in structure. Extended placket, tonal stitching, and a boxy cut that moves between boardrooms and boulevards with equal grace.',badge:'',limited:false,color:'#0f0f0f'},
+  {id:4,name:'BLANK Polo',cat:'shirt',catLabel:'Polo',price:2999,stock:89,brand:'KREDO',rating:4.5,views:0,cartCount:0,desc:'The anti-logo polo. No wordmarks. No graphics. Just exceptional piqué cotton and a silhouette refined across twelve prototypes.',badge:'',limited:false,color:'#141414'},
+  {id:5,name:'NULL Cargo',cat:'shirt',catLabel:'Bottoms',price:5499,stock:31,brand:'KREDO',rating:4.7,views:0,cartCount:0,desc:'Technical cargo trousers with minimal branding and maximum function. Six pockets, articulated knees, tonal hardware. Designed for those who move with purpose.',badge:'New',limited:false,color:'#1a1a1a'},
+  {id:6,name:'SILENCE Hoodie',cat:'hoodie',catLabel:'Hoodie',price:4499,stock:18,brand:'KREDO',rating:4.9,views:0,cartCount:0,desc:'Named for the philosophy. Whispers in every stitch — oversized fit, deliberately understated construction. Luxury through subtraction.',badge:'Limited',limited:true,color:'#0d0d0d'},
+  {id:7,name:'TRACE Tee',cat:'tshirt',catLabel:'T-Shirt',price:1999,stock:120,brand:'KREDO',rating:4.4,views:0,cartCount:0,desc:'The entry point to KREDO®. Essential in form but exceptional in fabric — 300GSM Supima cotton with a pre-washed vintage feel from day one.',badge:'',limited:false,color:'#161616'},
+  {id:8,name:'ZERO Shirt',cat:'shirt',catLabel:'Shirt',price:3799,stock:14,brand:'KREDO',rating:4.7,views:0,cartCount:0,desc:'Geometric precision meets effortless drape. An architectural shirt built on a grid — structured where it matters, relaxed everywhere else.',badge:'New',limited:true,color:'#0a0a0a'},
+];
+
+// ── DEFAULT CATEGORIES (dynamic, admin-managed) ────────────
+const DEFAULT_CATEGORIES = [
+  {id:'tshirt', label:'T-Shirt',  color:'#111111'},
+  {id:'hoodie', label:'Hoodie',   color:'#181818'},
+  {id:'shirt',  label:'Shirt',    color:'#0f0f0f'},
 ];
 
 const SIZES = ['XS','S','M','L','XL'];
-const CAT_LABELS = {tshirt:'T-Shirt',hoodie:'Hoodie',shirt:'Shirt'};
-const CAT_COLORS  = {tshirt:'#111111',hoodie:'#181818',shirt:'#0f0f0f'};
+const CAT_COLORS = {tshirt:'#111111',hoodie:'#181818',shirt:'#0f0f0f'};
+// CAT_LABELS is now derived from state.categories dynamically
+function getCatLabel(cat) {
+  const c = state.categories.find(x=>x.id===cat);
+  return c ? c.label : cat;
+}
 
 // ── SINGLE SOURCE OF TRUTH ─────────────────────────────────
 function loadState() {
   try {
-    const savedProducts = localStorage.getItem('kredo_products');
-    const savedCart     = localStorage.getItem('kredo_cart');
-    const savedWishlist = localStorage.getItem('kredo_wishlist');
-    const savedOrders   = localStorage.getItem('kredo_orders');
-    const savedNextId   = localStorage.getItem('kredo_next_id');
+    const savedProducts   = localStorage.getItem('kredo_products');
+    const savedCart       = localStorage.getItem('kredo_cart');
+    const savedWishlist   = localStorage.getItem('kredo_wishlist');
+    const savedOrders     = localStorage.getItem('kredo_orders');
+    const savedNextId     = localStorage.getItem('kredo_next_id');
+    const savedCategories = localStorage.getItem('kredo_categories');
     return {
-      products: savedProducts ? JSON.parse(savedProducts) : JSON.parse(JSON.stringify(DEFAULT_PRODUCTS)),
-      cart:     savedCart     ? JSON.parse(savedCart)     : [],
-      wishlist: savedWishlist ? JSON.parse(savedWishlist) : [],
-      orders:   savedOrders   ? JSON.parse(savedOrders)   : [],
-      nextId:   savedNextId   ? parseInt(savedNextId)     : 9,
+      products:   savedProducts   ? JSON.parse(savedProducts)   : JSON.parse(JSON.stringify(DEFAULT_PRODUCTS)),
+      cart:       savedCart       ? JSON.parse(savedCart)       : [],
+      wishlist:   savedWishlist   ? JSON.parse(savedWishlist)   : [],
+      orders:     savedOrders     ? JSON.parse(savedOrders)     : [],
+      nextId:     savedNextId     ? parseInt(savedNextId)       : 9,
+      categories: savedCategories ? JSON.parse(savedCategories) : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
     };
   } catch(e) {
     console.warn('State load error, using defaults:', e);
     return {
       products: JSON.parse(JSON.stringify(DEFAULT_PRODUCTS)),
+      categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
       cart: [], wishlist: [], orders: [], nextId: 9,
     };
   }
@@ -2082,11 +2168,12 @@ const state = loadState();
 
 function saveState() {
   try {
-    localStorage.setItem('kredo_products', JSON.stringify(state.products));
-    localStorage.setItem('kredo_cart',     JSON.stringify(state.cart));
-    localStorage.setItem('kredo_wishlist', JSON.stringify(state.wishlist));
-    localStorage.setItem('kredo_orders',   JSON.stringify(state.orders));
-    localStorage.setItem('kredo_next_id',  String(state.nextId));
+    localStorage.setItem('kredo_products',   JSON.stringify(state.products));
+    localStorage.setItem('kredo_cart',       JSON.stringify(state.cart));
+    localStorage.setItem('kredo_wishlist',   JSON.stringify(state.wishlist));
+    localStorage.setItem('kredo_orders',     JSON.stringify(state.orders));
+    localStorage.setItem('kredo_next_id',    String(state.nextId));
+    localStorage.setItem('kredo_categories', JSON.stringify(state.categories));
   } catch(e) {
     console.warn('State save error:', e);
   }
@@ -2095,6 +2182,7 @@ function saveState() {
 // ── GLOBAL RENDER-ALL ──────────────────────────────────────
 function renderAll() {
   renderHomeGrids();
+  renderRecommendations();
   renderShop();
   renderCartDrawer();
   renderWishlist();
@@ -2103,8 +2191,118 @@ function renderAll() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   LOADER
+   RATING STARS + ANALYTICS
 ═══════════════════════════════════════════════════════════ */
+function renderStars(rating) {
+  const r = Math.round((rating||0)*2)/2; // round to nearest 0.5
+  let html = '';
+  for(let i=1;i<=5;i++){
+    if(i<=r)      html+=`<span style="color:var(--gold);font-size:.7rem">★</span>`;
+    else if(i-0.5<=r) html+=`<span style="color:var(--gold);font-size:.7rem">½</span>`;
+    else          html+=`<span style="color:var(--grey);font-size:.7rem">★</span>`;
+  }
+  return `<span style="display:inline-flex;align-items:center;gap:1px">${html}</span><span style="font-size:.65rem;color:var(--dim);margin-left:4px">${r>0?r.toFixed(1):''}</span>`;
+}
+
+function trackView(productId) {
+  const p=state.products.find(x=>x.id===productId);
+  if(p){ p.views=(p.views||0)+1; saveState(); }
+}
+
+function trackCartAdd(productId) {
+  const p=state.products.find(x=>x.id===productId);
+  if(p){ p.cartCount=(p.cartCount||0)+1; saveState(); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RECOMMENDATION ENGINE
+═══════════════════════════════════════════════════════════ */
+function getRecommendations() {
+  const prods = state.products;
+  if(!prods.length) return {recommended:[], trending:[]};
+
+  // Trending: most viewed + most carted (combined score)
+  const trending = [...prods]
+    .map(p=>({...p, score:(p.views||0)*1 + (p.cartCount||0)*2}))
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,4);
+
+  // Recommended: based on categories in cart + wishlist
+  const cartCats   = [...new Set(state.cart.map(i=>i.cat).filter(Boolean))];
+  const wishCats   = [...new Set(state.wishlist.map(i=>i.cat).filter(Boolean))];
+  const prefCats   = [...new Set([...cartCats,...wishCats])];
+
+  let recommended;
+  if(prefCats.length) {
+    // Products matching preferred categories, not already in cart
+    const cartIds = new Set(state.cart.map(i=>i.id));
+    recommended = prods
+      .filter(p=>prefCats.includes(p.cat) && !cartIds.has(p.id))
+      .sort((a,b)=>(b.rating||0)-(a.rating||0))
+      .slice(0,4);
+    // Pad with top-rated if not enough
+    if(recommended.length<4) {
+      const more = prods
+        .filter(p=>!recommended.find(r=>r.id===p.id) && !cartIds.has(p.id))
+        .sort((a,b)=>(b.rating||0)-(a.rating||0))
+        .slice(0,4-recommended.length);
+      recommended = [...recommended,...more];
+    }
+  } else {
+    // No preferences yet — show top-rated
+    recommended = [...prods].sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,4);
+  }
+
+  return {recommended, trending};
+}
+
+function getSimilarProducts(product, count=4) {
+  if(!product) return [];
+  return state.products
+    .filter(p=>p.id!==product.id && p.cat===product.cat)
+    .sort((a,b)=>Math.abs(a.price-product.price)-Math.abs(b.price-product.price))
+    .slice(0,count);
+}
+
+function renderRecommendations() {
+  const {recommended, trending} = getRecommendations();
+
+  const recGrid = document.getElementById('rec-grid');
+  const trendGrid = document.getElementById('trend-grid');
+
+  if(recGrid) {
+    if(recommended.length) {
+      recGrid.innerHTML = recommended.map(p=>renderCard(p)).join('');
+    } else {
+      recGrid.innerHTML='<div style="color:var(--mid);font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;padding:24px 0">Add items to see recommendations</div>';
+    }
+  }
+
+  if(trendGrid) {
+    if(trending.length) {
+      trendGrid.innerHTML = trending.map(p=>renderCard(p)).join('');
+    } else {
+      trendGrid.innerHTML='';
+    }
+  }
+  // Observe new cards
+  setTimeout(()=>{
+    document.querySelectorAll('#rec-grid .product-card, #trend-grid .product-card').forEach(c=>cardObserver.observe(c));
+  },80);
+}
+
+function renderSimilarProducts(product) {
+  const similar = getSimilarProducts(product);
+  const grid = document.getElementById('similar-grid');
+  const wrap = document.getElementById('similar-wrap');
+  if(!grid || !wrap) return;
+  if(!similar.length) { wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  grid.innerHTML = similar.map(p=>renderCard(p)).join('');
+  setTimeout(()=>{
+    document.querySelectorAll('#similar-grid .product-card').forEach(c=>cardObserver.observe(c));
+  },80);
+}
 (function initLoader(){
   const logo = document.getElementById('ld-logo');
   'KREDO'.split('').forEach((ch,i) => {
@@ -2225,7 +2423,9 @@ function navigate(page) {
     try { pRend.dispose(); pRend.forceContextLoss(); } catch(e) {}
     pRend=null; pScene=null; pMesh=null;
   }
-  if(page==='admin-kredo-secure') {
+
+  // Admin pages — handle separately (no fade, hide nav)
+  if(page==='admin-kredo-secure' || page==='admin-login') {
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active','visible'));
     const pg=document.getElementById('page-admin-login');
     if(pg){ pg.classList.add('active'); requestAnimationFrame(()=>pg.classList.add('visible')); }
@@ -2244,12 +2444,17 @@ function navigate(page) {
     cover.classList.remove('covering');
     requestAnimationFrame(()=>requestAnimationFrame(()=>pg.classList.add('visible')));
     // Page-specific
-    if(page==='home')      { if(!isMobile()) initHeroThree(); setupScrollAnimations(); setTimeout(initMagnetic,100); renderHomeGrids(); }
-    if(page==='shop')      { shopSearch=''; renderShop(); setTimeout(animateCards,50); }
+    if(page==='home')      { if(!isMobile()) initHeroThree(); setupScrollAnimations(); setTimeout(initMagnetic,100); renderHomeGrids(); renderRecommendations(); }
+    if(page==='shop')      { shopSearch=''; renderShop(); renderBrandFilter(); setTimeout(animateCards,50); }
     if(page==='checkout')  { goStep(1); renderCheckout(); }
     if(page==='wishlist')  { renderWishlist(); }
     if(page==='orders')    { renderOrdersPage(); }
-    if(page==='admin')     { checkAdminAuth(); renderAdminProducts(); refreshDashboard(); }
+    if(page==='admin') {
+      if(!checkAdminAuth()) return; // redirected to login
+      document.getElementById('nav').style.display='none';
+      const firstNav = document.querySelector('#page-admin .adm-nav');
+      admSection('dash', firstNav);
+    }
     if(page==='sizeguide') { /* static */ }
     setTimeout(initMagnetic,200);
   },320);
@@ -2469,12 +2674,20 @@ function thumbSVG(color) {
 /* ═══════════════════════════════════════════════════════════
    PRODUCT CARD RENDERING
 ═══════════════════════════════════════════════════════════ */
+function highlightText(text, query) {
+  if(!query||!query.trim()) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return text.replace(new RegExp('('+escaped+')','gi'),
+    '<mark style="background:rgba(201,169,110,.3);color:var(--gold);padding:0 1px;border-radius:2px">$1</mark>');
+}
 function renderCard(p, showRemoveWish=false) {
   const inWish = state.wishlist.some(w=>w.id===p.id);
   const stockLabel = p.stock <= 5 && p.stock > 0 ? `Only ${p.stock} left!`
-                   : p.stock === 0                ? 'Out of Stock'
+                   : p.stock === 0               ? 'Out of Stock'
                    : `${p.stock} in stock`;
   const stockColor = p.stock <= 5 ? '#e55' : 'var(--dim)';
+  const hl = shopSearch && shopSearch.trim();
+  const displayName = hl ? highlightText(p.name, shopSearch) : p.name;
   return `<div class="product-card" id="card-${p.id}" onclick="openProduct(${p.id})">
     <div class="product-img-wrap" style="background:${p.color||'#111'}">
       ${p.badge?`<div class="prod-badge ${p.limited?'lim-badge':'new-badge'}">${p.badge}</div>`:''}
@@ -2493,7 +2706,8 @@ function renderCard(p, showRemoveWish=false) {
     </div>
     <div class="card-info">
       <div class="card-cat">${p.catLabel||''}</div>
-      <div class="card-name">${p.name}</div>
+      <div class="card-name">${displayName}</div>
+      <div style="margin:3px 0 6px">${renderStars(p.rating||0)}</div>
       <div class="card-price">₹${p.price.toLocaleString('en-IN')}</div>
     </div>
     ${showRemoveWish?`<button class="wish-remove" onclick="event.stopPropagation();removeFromWishlist(${p.id})">✕</button>`:''}
@@ -2512,17 +2726,26 @@ function renderHomeGrids() {
   },100);
 }
 
-let shopFilter='all', shopSort='new', shopMaxPrice=12000, shopSearch='';
+let shopFilter='all', shopSort='new', shopMaxPrice=12000, shopSearch='', shopMinRating=0, shopBrand='all';
 
 function renderShop() {
   const grid=document.getElementById('shop-grid');
   if(!grid) return;
+
+  // Refresh dynamic category filter
+  renderCategoryFilter();
+
   let prods=[...state.products];
   if(shopFilter!=='all')    prods=prods.filter(p=>p.cat===shopFilter);
   if(shopMaxPrice<12000)    prods=prods.filter(p=>p.price<=shopMaxPrice);
-  if(shopSearch.trim())     prods=prods.filter(p=>p.name.toLowerCase().includes(shopSearch.toLowerCase())||p.catLabel.toLowerCase().includes(shopSearch.toLowerCase()));
+  if(shopMinRating>0)       prods=prods.filter(p=>(p.rating||0)>=shopMinRating);
+  if(shopBrand!=='all')     prods=prods.filter(p=>(p.brand||'KREDO')===shopBrand);
+  if(shopSearch.trim())     prods=prods.filter(p=>p.name.toLowerCase().includes(shopSearch.toLowerCase())||(p.catLabel||'').toLowerCase().includes(shopSearch.toLowerCase())||(p.brand||'').toLowerCase().includes(shopSearch.toLowerCase()));
   if(shopSort==='asc')      prods.sort((a,b)=>a.price-b.price);
   else if(shopSort==='desc')prods.sort((a,b)=>b.price-a.price);
+  else if(shopSort==='popular') prods.sort((a,b)=>((b.views||0)+(b.cartCount||0)*2)-((a.views||0)+(a.cartCount||0)*2));
+  else if(shopSort==='rating')  prods.sort((a,b)=>(b.rating||0)-(a.rating||0));
+
   grid.innerHTML = prods.length
     ? prods.map(p=>renderCard(p)).join('')
     : `<div style="grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--mid);font-size:.75rem;letter-spacing:.25em;text-transform:uppercase">No products match your filters<br><br><button class="btn-secondary" onclick="resetShopFilters()" style="margin-top:16px">Clear Filters</button></div>`;
@@ -2531,15 +2754,46 @@ function renderShop() {
   setTimeout(animateCards,40);
 }
 
+function renderCategoryFilter() {
+  const el=document.getElementById('cat-filter-list');
+  if(!el) return;
+  const cats=state.categories;
+  el.innerHTML=`<button class="filter-opt${shopFilter==='all'?' on':''}" onclick="filterCat('all',this)"><span class="fchk">${shopFilter==='all'?'✓':''}</span>All</button>`
+    +cats.map(c=>`<button class="filter-opt${shopFilter===c.id?' on':''}" onclick="filterCat('${c.id}',this)"><span class="fchk">${shopFilter===c.id?'✓':''}</span>${c.label}</button>`).join('');
+}
+
+function renderBrandFilter() {
+  const el=document.getElementById('brand-filter-list');
+  if(!el) return;
+  const brands=[...new Set(state.products.map(p=>p.brand||'KREDO').filter(Boolean))];
+  el.innerHTML=`<button class="filter-opt${shopBrand==='all'?' on':''}" onclick="filterBrand('all',this)"><span class="fchk">${shopBrand==='all'?'✓':''}</span>All Brands</button>`
+    +brands.map(b=>`<button class="filter-opt${shopBrand===b?' on':''}" onclick="filterBrand('${b}',this)"><span class="fchk">${shopBrand===b?'✓':''}</span>${b}</button>`).join('');
+}
+
+function filterBrand(brand, btn) {
+  shopBrand=brand;
+  document.querySelectorAll('#brand-filter-list .filter-opt').forEach(b=>{ b.classList.remove('on'); b.querySelector('.fchk').textContent=''; });
+  btn.classList.add('on'); btn.querySelector('.fchk').textContent='✓';
+  renderShop();
+}
+
+function filterRating(min) {
+  shopMinRating=min;
+  document.querySelectorAll('.rating-filter-btn').forEach(b=>b.classList.remove('on'));
+  const active=document.querySelector('.rating-filter-btn[data-r="'+min+'"]');
+  if(active) active.classList.add('on');
+  renderShop();
+}
+
 function resetShopFilters() {
-  shopFilter='all'; shopSort='new'; shopMaxPrice=12000; shopSearch='';
-  document.querySelectorAll('.filter-opt').forEach(b=>{ b.classList.remove('on'); b.querySelector('.fchk').textContent=''; });
-  const allBtn=document.querySelector('.filter-opt'); if(allBtn){ allBtn.classList.add('on'); allBtn.querySelector('.fchk').textContent='✓'; }
+  shopFilter='all'; shopSort='new'; shopMaxPrice=12000; shopSearch=''; shopMinRating=0; shopBrand='all';
   const pr=document.getElementById('price-range'); if(pr) pr.value=12000;
   const pd=document.getElementById('price-disp'); if(pd) pd.textContent='Up to ₹12,000';
   const si=document.getElementById('shop-search-inp'); if(si) si.value='';
   const ss=document.getElementById('sort-sel'); if(ss) ss.value='new';
+  document.querySelectorAll('.rating-filter-btn').forEach(b=>b.classList.remove('on'));
   renderShop();
+  renderBrandFilter();
 }
 
 function updatePriceFilter(val) {
@@ -2556,7 +2810,7 @@ function searchProducts(val) {
 
 function filterCat(cat,btn) {
   shopFilter=cat;
-  document.querySelectorAll('.filter-opt').forEach(b=>{ b.classList.remove('on'); b.querySelector('.fchk').textContent=''; });
+  document.querySelectorAll('#cat-filter-list .filter-opt').forEach(b=>{ b.classList.remove('on'); b.querySelector('.fchk').textContent=''; });
   btn.classList.add('on'); btn.querySelector('.fchk').textContent='✓';
   renderShop();
 }
@@ -2571,6 +2825,8 @@ function openProduct(id) {
   const p=state.products.find(x=>x.id===id);
   if(!p) { showNotif('Unavailable','This product is no longer available'); navigate('shop'); return; }
   currentProduct=p;
+  // Track view
+  trackView(id);
   navigate('product');
   document.getElementById('pp-cat').textContent=p.catLabel||'';
   document.getElementById('pp-name').textContent=p.name;
@@ -2580,6 +2836,12 @@ function openProduct(id) {
     p.stock===0 ? 'Out of Stock' :
     p.stock<=5  ? `Only ${p.stock} pieces left` :
     `${p.stock} pieces available`;
+  // Rating
+  const ratingEl=document.getElementById('pp-rating');
+  if(ratingEl) ratingEl.innerHTML=renderStars(p.rating||0);
+  // Views label
+  const vl=document.getElementById('pp-views-label');
+  if(vl) vl.textContent=(p.views||0)>0?(p.views+' views'):'';
   // Sizes
   selectedSize='M';
   const szEl=document.getElementById('pp-sizes');
@@ -2593,6 +2855,8 @@ function openProduct(id) {
     wb.style.color=inW?'var(--gold)':'';
   }
   if(!isMobile()) setTimeout(()=>initProductThree(p),80);
+  // Similar products
+  setTimeout(()=>renderSimilarProducts(p),100);
 }
 
 function selectSize(s,el) {
@@ -2626,25 +2890,51 @@ function wishlistCurrent() {
 /* ═══════════════════════════════════════════════════════════
    CART — FULL SYSTEM
 ═══════════════════════════════════════════════════════════ */
-function addToCart(id,size) {
-  size=size||selectedSize||'M';
-  const p=state.products.find(x=>x.id===id);
-  if(!p) return;
-  if(p.stock===0) { showNotif('Out of Stock',p.name+' is currently unavailable'); return; }
-  const existing=state.cart.find(x=>x.id===id&&x.size===size);
-  if(existing) {
-    if(existing.qty >= p.stock) { showNotif('Stock Limit',`Only ${p.stock} pieces available`); return; }
+// Debounce map: id+size -> timestamp, prevents rapid-click spam
+const _addToCartLastCall = {};
+
+function addToCart(id, size) {
+  size = size || selectedSize || 'M';
+
+  // Debounce: ignore calls within 400ms for same product+size
+  const key = id + '-' + size;
+  const now = Date.now();
+  if (_addToCartLastCall[key] && now - _addToCartLastCall[key] < 400) return;
+  _addToCartLastCall[key] = now;
+
+  const p = state.products.find(x => x.id === id);
+  if (!p) return;
+  if (p.stock === 0) { showNotif('Out of Stock', p.name + ' is currently unavailable'); return; }
+
+  const existing = state.cart.find(x => x.id === id && x.size === size);
+  if (existing) {
+    if (existing.qty >= p.stock) { showNotif('Stock Limit', `Only ${p.stock} pieces available`); return; }
     existing.qty++;
   } else {
     state.cart.push({
-      id:p.id, name:p.name, price:p.price, catLabel:p.catLabel||'',
-      color:p.color||'#111', size, qty:1
+      id: p.id, name: p.name, price: p.price, catLabel: p.catLabel || '',
+      cat: p.cat, color: p.color || '#111', size, qty: 1
     });
   }
+  trackCartAdd(id); // analytics
   saveState();
   updatePip();
   renderCartDrawer();
-  showNotif('Added to Bag', p.name+' — Size '+size);
+  showNotif('Added to Bag ✓', p.name + ' — Size ' + size);
+
+  // Flash feedback on the card's add button
+  const btn = document.querySelector(`#card-${id} .ca-btn.add`);
+  if (btn) {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Added';
+    btn.style.background = 'var(--gold2)';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.background = '';
+      btn.disabled = false;
+    }, 900);
+  }
 }
 
 function removeFromCart(id,size) {
@@ -3095,42 +3385,65 @@ let editingProductId=null;
 function checkAdminAuth() {
   if(!sessionStorage.getItem('kredo_admin')) {
     navigate('admin-login');
+    return false;
   }
+  return true;
 }
 
 function adminLogin() {
-  const em=document.getElementById('adm-email').value.trim();
-  const pw=document.getElementById('adm-pass').value;
-  if(em==='admin@kredo.com'&&pw==='kredo2025') {
+  const emEl = document.getElementById('adm-email');
+  const pwEl = document.getElementById('adm-pass');
+  if(!emEl || !pwEl) return;
+  const em = emEl.value.trim();
+  const pw = pwEl.value;
+
+  if(em === 'admin@kredo.com' && pw === 'kredo2025') {
     sessionStorage.setItem('kredo_admin','true');
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active','visible'));
-    const pg=document.getElementById('page-admin');
+    // Hide all pages + nav
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active','visible'));
+    document.getElementById('nav').style.display = 'none';
+    // Show admin panel
+    const pg = document.getElementById('page-admin');
+    if(!pg) { console.error('page-admin not found'); return; }
     pg.classList.add('active');
-    requestAnimationFrame(()=>pg.classList.add('visible'));
-    document.getElementById('nav').style.display='none';
-    admSection('dash',document.querySelector('.adm-nav'));
-    renderAdminProducts();
-    refreshDashboard();
+    requestAnimationFrame(() => {
+      pg.classList.add('visible');
+      // Find first nav button inside this panel and activate dashboard
+      const firstNav = pg.querySelector('.adm-nav');
+      admSection('dash', firstNav);
+    });
   } else {
-    showNotif('Access Denied','Invalid admin credentials');
-    const passEl=document.getElementById('adm-pass');
-    if(passEl){ passEl.value=''; passEl.focus(); }
+    showNotif('Access Denied', 'admin@kredo.com / kredo2025');
+    pwEl.value = '';
+    pwEl.focus();
   }
 }
 
-function admSection(sec,btn) {
-  document.querySelectorAll('.adm-nav').forEach(b=>b.classList.remove('on'));
+function admSection(sec, btn) {
+  // Clear all nav highlights
+  const allNavBtns = document.querySelectorAll('#page-admin .adm-nav');
+  allNavBtns.forEach(b => b.classList.remove('on'));
   if(btn) btn.classList.add('on');
-  ['dash','prods','orders','qr'].forEach(s=>{
-    const el=document.getElementById('adm-'+s);
-    if(el) el.style.display=s===sec?'block':'none';
+
+  // Hide all panels then show target
+  ['dash','prods','cats','orders','qr'].forEach(s => {
+    const el = document.getElementById('adm-'+s);
+    if(el) el.style.display = s===sec ? 'block' : 'none';
   });
+
+  // Run section-specific logic
   if(sec==='dash')   refreshDashboard();
   if(sec==='prods')  { renderAdminProducts(); cancelProductForm(); }
+  if(sec==='cats')   { renderAdminCategories(); cancelCatForm(); }
   if(sec==='orders') renderAdminOrders();
+  if(sec==='qr')     { /* static UI */ }
 }
 
-// ── DASHBOARD ─────────────────────────────────────
+function exitAdmin() {
+  sessionStorage.removeItem('kredo_admin');
+  document.getElementById('nav').style.display = '';
+  navigate('home');
+}
 function refreshDashboard() {
   const stats=document.getElementById('dash-stats');
   if(!stats) return;
@@ -3185,6 +3498,13 @@ function renderAdminProducts() {
   const emptyMsg=document.getElementById('prod-empty-msg');
   const tableWrap=document.getElementById('prod-table-wrap');
   if(!tb) return;
+
+  // Populate category dropdown dynamically
+  const catSel=document.getElementById('inp-cat');
+  if(catSel) {
+    catSel.innerHTML=state.categories.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
+  }
+
   if(!state.products.length) {
     if(emptyMsg) emptyMsg.style.display='block';
     if(tableWrap) tableWrap.style.display='none';
@@ -3195,34 +3515,44 @@ function renderAdminProducts() {
   tb.innerHTML=state.products.map(p=>`<tr id="prod-row-${p.id}">
     <td><strong style="letter-spacing:.05em">${p.name}</strong></td>
     <td>${p.catLabel||''}</td>
+    <td style="color:var(--dim)">${p.brand||'KREDO'}</td>
     <td>₹${p.price.toLocaleString('en-IN')}</td>
+    <td>${p.rating!=null?`<span style="color:var(--gold)">${Number(p.rating).toFixed(1)}★</span>`:'—'}</td>
     <td>${p.stock}</td>
-    <td>${p.badge?`<span class="st-badge ${p.limited?'':'pro'}" style="${p.limited?'':'background:rgba(201,169,110,.1);color:var(--gold)'}">${p.badge}</span>`:'<span style="color:var(--mid);font-size:.65rem">—</span>'}</td>
     <td>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button style="padding:5px 12px;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--grey);color:var(--dim);cursor:pointer;font-family:'Rajdhani',sans-serif" onclick="openEditProduct(${p.id})" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--grey)';this.style.color='var(--dim)'">Edit</button>
-        <button style="padding:5px 12px;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(184,48,48,.1);color:#e55;border:1px solid rgba(184,48,48,.3);cursor:pointer;font-family:'Rajdhani',sans-serif" onclick="deleteProduct(${p.id})" onmouseover="this.style.background='rgba(184,48,48,.25)'" onmouseout="this.style.background='rgba(184,48,48,.1)'">Delete</button>
+        <button style="padding:5px 12px;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--grey);color:var(--dim);cursor:pointer;font-family:'Rajdhani',sans-serif"
+          onclick="openEditProduct(${p.id})"
+          onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'"
+          onmouseout="this.style.borderColor='var(--grey)';this.style.color='var(--dim)'">Edit</button>
+        <button style="padding:5px 12px;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(184,48,48,.1);color:#e55;border:1px solid rgba(184,48,48,.3);cursor:pointer;font-family:'Rajdhani',sans-serif"
+          onclick="deleteProduct(${p.id})"
+          onmouseover="this.style.background='rgba(184,48,48,.25)'"
+          onmouseout="this.style.background='rgba(184,48,48,.1)'">Delete</button>
       </div>
     </td>
   </tr>`).join('');
 }
 
-// ── ADD / EDIT ─────────────────────────────────────
+// ── ADD / EDIT PRODUCT FORM ───────────────────────
 function toggleAddForm() {
   const form=document.getElementById('add-prod-form');
   if(form.style.display!=='none') { cancelProductForm(); return; }
   editingProductId=null;
   document.getElementById('form-mode-label').textContent='New Product';
   document.getElementById('toggle-add-btn').textContent='✕ Close';
-  ['inp-name','inp-price','inp-stock','inp-desc','inp-badge'].forEach(id=>{
+  ['inp-name','inp-price','inp-stock','inp-desc','inp-badge','inp-brand','inp-rating'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
-  const cat=document.getElementById('inp-cat'); if(cat) cat.value='tshirt';
+  // Populate category dropdown
+  const catSel=document.getElementById('inp-cat');
+  if(catSel) catSel.innerHTML=state.categories.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
   const lim=document.getElementById('inp-limited'); if(lim) lim.value='false';
   const err=document.getElementById('form-error'); if(err) err.style.display='none';
   form.style.display='block';
   const inp=document.getElementById('inp-name'); if(inp) inp.focus();
 }
+
 function cancelProductForm() {
   const form=document.getElementById('add-prod-form');
   if(form) form.style.display='none';
@@ -3232,19 +3562,25 @@ function cancelProductForm() {
   if(err) err.style.display='none';
   editingProductId=null;
 }
+
 function openEditProduct(id) {
   const p=state.products.find(x=>x.id===id);
   if(!p) return;
   editingProductId=id;
+  // Populate category dropdown first
+  const catSel=document.getElementById('inp-cat');
+  if(catSel) catSel.innerHTML=state.categories.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
   document.getElementById('form-mode-label').textContent='Edit: '+p.name;
   document.getElementById('toggle-add-btn').textContent='✕ Close';
   document.getElementById('inp-name').value=p.name;
   document.getElementById('inp-price').value=p.price;
-  document.getElementById('inp-cat').value=p.cat;
+  if(catSel) catSel.value=p.cat;
   document.getElementById('inp-stock').value=p.stock;
   document.getElementById('inp-desc').value=p.desc||'';
   document.getElementById('inp-badge').value=p.badge||'';
   document.getElementById('inp-limited').value=p.limited?'true':'false';
+  const brand=document.getElementById('inp-brand'); if(brand) brand.value=p.brand||'';
+  const rating=document.getElementById('inp-rating'); if(rating) rating.value=p.rating!=null?p.rating:'';
   const err=document.getElementById('form-error'); if(err) err.style.display='none';
   document.getElementById('add-prod-form').style.display='block';
   document.getElementById('inp-name').focus();
@@ -3252,36 +3588,42 @@ function openEditProduct(id) {
 
 function saveProduct() {
   const errEl=document.getElementById('form-error');
-  const name=document.getElementById('inp-name').value.trim();
-  const price=parseInt(document.getElementById('inp-price').value);
-  const cat=document.getElementById('inp-cat').value;
-  const stock=parseInt(document.getElementById('inp-stock').value);
-  const desc=document.getElementById('inp-desc').value.trim();
-  const badge=document.getElementById('inp-badge').value.trim();
-  const limited=document.getElementById('inp-limited').value==='true';
+  const name    = document.getElementById('inp-name').value.trim();
+  const price   = parseInt(document.getElementById('inp-price').value);
+  const cat     = document.getElementById('inp-cat').value;
+  const stock   = parseInt(document.getElementById('inp-stock').value);
+  const desc    = document.getElementById('inp-desc').value.trim();
+  const badge   = document.getElementById('inp-badge').value.trim();
+  const limited = document.getElementById('inp-limited').value==='true';
+  const brandEl = document.getElementById('inp-brand');
+  const ratingEl= document.getElementById('inp-rating');
+  const brand   = brandEl ? (brandEl.value.trim()||'KREDO') : 'KREDO';
+  const ratingRaw = ratingEl ? parseFloat(ratingEl.value) : NaN;
+  const rating  = isNaN(ratingRaw) ? null : Math.min(5,Math.max(0,ratingRaw));
 
-  if(!name)               { errEl.textContent='Product name is required.';      errEl.style.display='block'; document.getElementById('inp-name').focus(); return; }
-  if(!price||price<1)     { errEl.textContent='Please enter a valid price.';     errEl.style.display='block'; document.getElementById('inp-price').focus(); return; }
-  if(isNaN(stock)||stock<0){ errEl.textContent='Stock must be 0 or more.';       errEl.style.display='block'; document.getElementById('inp-stock').focus(); return; }
+  if(!name)                { errEl.textContent='Product name is required.';    errEl.style.display='block'; document.getElementById('inp-name').focus(); return; }
+  if(!price||price<1)      { errEl.textContent='Please enter a valid price.';  errEl.style.display='block'; document.getElementById('inp-price').focus(); return; }
+  if(isNaN(stock)||stock<0){ errEl.textContent='Stock must be 0 or more.';     errEl.style.display='block'; document.getElementById('inp-stock').focus(); return; }
   errEl.style.display='none';
+
+  const catObj = state.categories.find(c=>c.id===cat);
+  const catLabel = catObj ? catObj.label : cat;
 
   if(editingProductId!==null) {
     const idx=state.products.findIndex(p=>p.id===editingProductId);
     if(idx!==-1) {
-      // Preserve existing color; update catColor only if category changed
       const oldProd=state.products[idx];
-      const newColor = cat!==oldProd.cat ? (CAT_COLORS[cat]||'#111111') : oldProd.color;
-      state.products[idx]={...oldProd, name, price, cat, catLabel:CAT_LABELS[cat]||cat, stock, desc, badge, limited, color:newColor};
-      showNotif('Product Updated',name+' has been updated');
+      const newColor = cat!==oldProd.cat ? (catObj?.color||'#111111') : oldProd.color;
+      state.products[idx]={...oldProd, name, price, cat, catLabel, stock, desc, badge, limited, brand, rating, color:newColor};
+      showNotif('Product Updated', name+' has been updated');
     }
   } else {
     state.products.push({
-      id:state.nextId++, name, price, cat,
-      catLabel:CAT_LABELS[cat]||cat,
-      stock, desc, badge, limited,
-      color: CAT_COLORS[cat]||'#111111',
+      id: state.nextId++, name, price, cat, catLabel, stock, desc, badge,
+      limited, brand, rating, views:0, cartCount:0,
+      color: catObj?.color||'#111111',
     });
-    showNotif('Product Added',name+' added to catalogue');
+    showNotif('Product Added', name+' added to catalogue');
   }
   saveState();
   cancelProductForm();
@@ -3289,7 +3631,138 @@ function saveProduct() {
   renderAll();
 }
 
-// ── DELETE ────────────────────────────────────────
+// ── CATEGORY MANAGEMENT ──────────────────────────
+function renderAdminCategories() {
+  const tb     = document.getElementById('adm-cats-table');
+  const empty  = document.getElementById('cats-empty-msg');
+  const wrap   = document.getElementById('cats-table-wrap');
+  if(!tb) return;
+
+  if(!state.categories.length) {
+    if(empty) empty.style.display='block';
+    if(wrap)  wrap.style.display='none';
+    return;
+  }
+  if(empty) empty.style.display='none';
+  if(wrap)  wrap.style.display='table';
+
+  tb.innerHTML = state.categories.map(c => {
+    const usedBy = state.products.filter(p=>p.cat===c.id).length;
+    return `<tr id="cat-row-${c.id}">
+      <td style="font-family:monospace;font-size:.78rem;color:var(--gold)">${c.id}</td>
+      <td style="font-size:.88rem">${c.label}</td>
+      <td style="font-size:.78rem;color:var(--dim)">${usedBy} product${usedBy!==1?'s':''}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button style="padding:5px 12px;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--grey);color:var(--dim);cursor:pointer;font-family:'Rajdhani',sans-serif"
+            onclick="openEditCategory('${c.id}')"
+            onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'"
+            onmouseout="this.style.borderColor='var(--grey)';this.style.color='var(--dim)'">Edit</button>
+          ${usedBy===0?`<button style="padding:5px 12px;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(184,48,48,.1);color:#e55;border:1px solid rgba(184,48,48,.3);cursor:pointer;font-family:'Rajdhani',sans-serif"
+            onclick="deleteCategory('${c.id}')"
+            onmouseover="this.style.background='rgba(184,48,48,.25)'"
+            onmouseout="this.style.background='rgba(184,48,48,.1)'">Delete</button>`
+          :`<span style="font-size:.6rem;color:var(--mid);letter-spacing:.1em;text-transform:uppercase">In use</span>`}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleCatForm() {
+  const form = document.getElementById('add-cat-form');
+  if(form.style.display!=='none') { cancelCatForm(); return; }
+  document.getElementById('cat-form-label').textContent = 'New Category';
+  document.getElementById('toggle-cat-btn').textContent = '✕ Close';
+  document.getElementById('cat-inp-id').value   = '';
+  document.getElementById('cat-inp-label').value= '';
+  document.getElementById('cat-inp-id').disabled = false;
+  const err=document.getElementById('cat-form-error'); if(err) err.style.display='none';
+  form.style.display='block';
+  document.getElementById('cat-inp-id').focus();
+}
+
+function cancelCatForm() {
+  const form=document.getElementById('add-cat-form');
+  if(form) form.style.display='none';
+  const btn=document.getElementById('toggle-cat-btn');
+  if(btn) btn.textContent='+ Add Category';
+  const err=document.getElementById('cat-form-error'); if(err) err.style.display='none';
+}
+
+function openEditCategory(id) {
+  const c=state.categories.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('cat-form-label').textContent='Edit Category: '+c.label;
+  document.getElementById('toggle-cat-btn').textContent='✕ Close';
+  document.getElementById('cat-inp-id').value   = c.id;
+  document.getElementById('cat-inp-id').disabled= true; // can't change the ID
+  document.getElementById('cat-inp-label').value= c.label;
+  const err=document.getElementById('cat-form-error'); if(err) err.style.display='none';
+  document.getElementById('add-cat-form').style.display='block';
+  document.getElementById('cat-inp-label').focus();
+}
+
+function saveCategory() {
+  const errEl = document.getElementById('cat-form-error');
+  const rawId  = document.getElementById('cat-inp-id').value.trim().toLowerCase().replace(/\s+/g,'-');
+  const label  = document.getElementById('cat-inp-label').value.trim();
+  const isEdit = document.getElementById('cat-inp-id').disabled;
+
+  if(!isEdit && !rawId) { errEl.textContent='Category ID is required.'; errEl.style.display='block'; return; }
+  if(!label)            { errEl.textContent='Display label is required.'; errEl.style.display='block'; return; }
+
+  if(isEdit) {
+    // Update existing category label
+    const c=state.categories.find(x=>x.id===rawId);
+    if(c) {
+      c.label=label;
+      // Update all products using this category
+      state.products.forEach(p=>{ if(p.cat===rawId) p.catLabel=label; });
+      showNotif('Category Updated', label+' label updated');
+    }
+  } else {
+    if(state.categories.find(x=>x.id===rawId)) {
+      errEl.textContent='A category with this ID already exists.';
+      errEl.style.display='block'; return;
+    }
+    state.categories.push({ id:rawId, label, color:'#111111' });
+    showNotif('Category Added', label+' added');
+  }
+  errEl.style.display='none';
+  saveState();
+  cancelCatForm();
+  renderAdminCategories();
+  renderCategoryFilter(); // sync shop sidebar
+  renderShop();
+}
+
+function deleteCategory(id) {
+  const inUse = state.products.some(p=>p.cat===id);
+  if(inUse) { showNotif('Cannot Delete','This category is in use by existing products'); return; }
+
+  const row=document.getElementById('cat-row-'+id);
+  if(row) {
+    row.style.background='rgba(184,48,48,.08)';
+    const td=row.querySelector('td:last-child');
+    if(td) td.innerHTML=`<div style="display:flex;gap:6px;align-items:center">
+      <span style="font-size:.62rem;letter-spacing:.1em;color:#e55;text-transform:uppercase">Confirm?</span>
+      <button style="padding:5px 12px;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(184,48,48,.25);color:#e55;border:1px solid rgba(184,48,48,.5);cursor:pointer;font-family:'Rajdhani',sans-serif"
+        onclick="confirmDeleteCategory('${id}')">Yes, Delete</button>
+      <button style="padding:5px 10px;font-size:.58rem;text-transform:uppercase;background:none;border:1px solid var(--grey);color:var(--dim);cursor:pointer;font-family:'Rajdhani',sans-serif"
+        onclick="renderAdminCategories()">Cancel</button>
+    </div>`;
+  }
+}
+
+function confirmDeleteCategory(id) {
+  state.categories=state.categories.filter(c=>c.id!==id);
+  saveState();
+  showNotif('Category Deleted','Category removed');
+  renderAdminCategories();
+  renderCategoryFilter();
+  renderShop();
+}
 function deleteProduct(id) {
   const p=state.products.find(x=>x.id===id);
   if(!p) return;
@@ -3366,14 +3839,9 @@ function saveQRSettings() {
 }
 
 function resetToDefaults() {
-  if(!confirm('Reset ALL data to defaults? This will clear all orders, cart, wishlist, and restore original products.')) return;
-  localStorage.removeItem('kredo_products');
-  localStorage.removeItem('kredo_cart');
-  localStorage.removeItem('kredo_wishlist');
-  localStorage.removeItem('kredo_orders');
-  localStorage.removeItem('kredo_next_id');
-  localStorage.removeItem('kredo_order_counter');
-  localStorage.removeItem('kredo_drop_date');
+  if(!confirm('Reset ALL data to defaults? This will clear all orders, cart, wishlist, categories, and restore original products.')) return;
+  ['kredo_products','kredo_cart','kredo_wishlist','kredo_orders',
+   'kredo_next_id','kredo_order_counter','kredo_drop_date','kredo_categories'].forEach(k=>localStorage.removeItem(k));
   showNotif('Data Reset','All data restored to defaults');
   setTimeout(()=>location.reload(),1200);
 }
@@ -3493,6 +3961,7 @@ window.addEventListener('scroll',onScroll,{passive:true});
 setTimeout(()=>{
   // Render home page product grids immediately
   renderHomeGrids();
+  renderRecommendations();
   updatePip();
   // Make home page visible
   const home=document.getElementById('page-home');
